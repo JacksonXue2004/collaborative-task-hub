@@ -37,6 +37,8 @@ next-env.d.ts
 .agents/
 .claude/
 .trae/
+.windsurf/
+PROJECT_CODEBOOK.md
 
 # prisma
 /prisma/*.db
