@@ -1,0 +1,120 @@
+# Project Specification: Collaborative Task Hub
+## Project Overview
+Build a production‑oriented team‑collaboration SaaS web application for US SWE / SDE internship portfolio.
+Strictly avoid toy‑demo quality. DO NOT add any LLM / AI‑related features.
+
+Core business: Team workspace for task management, similar to lightweight Trello / GitHub Issues.
+Multiple users can create workspaces, invite members, assign tasks, leave comments, track task progress, with strict role‑based access control.
+
+## Mandatory Tech Stack
+1. Framework: Next.js 15 App Router, TypeScript, Tailwind CSS
+2. Database: PostgreSQL, Prisma ORM
+    - Must implement foreign‑key constraints, many‑to‑many relationship, database indexes for frequently queried columns.
+    - ❌ FORBIDDEN: MongoDB
+3. Authentication: Clerk (user sign‑in / sign‑up), sync clerk userId into local database user table
+4. File storage: UploadThing for task attachments. Mark attachment feature as stretch‑goal, can be implemented optionally to reduce workload.
+5. Backend Architecture Rule (Critical for SWE resume):
+    - Use Next.js Server Actions for web UI form submission workflow.
+    - MANDATORY: Build independent REST API via Next.js Route Handlers under `/app/api`.
+    - ⚠️ NON‑NEGOTIABLE: Server Actions and Route Handlers are ONLY thin adapter layers. All database operations, permission checks, business logic must be extracted to shared service modules, reused by both entry points. NO duplicated business logic.
+    - REST API must handle native HTTP Request / Response object, return correct HTTP status codes, zod input validation, backend authorization check, standardized JSON error response body.
+6. Security rule: All input validation and authorization check MUST run on backend. Never rely only on frontend UI button hiding for access control.
+
+## Database Schema Design
+Tables:
+1. User: store clerk userId as unique identifier.
+2. Project: team workspace. Each project has one owner, multiple members.
+3. ProjectMember: Many‑to‑many join table between User and Project.
+   Role Enum: ["OWNER", "MEMBER"]
+   This table is the source of truth for RBAC permission.
+4. Task: belong to single Project.
+    Fields: title, description, status(Enum["TODO","IN_PROGRESS","DONE"]), priority(Enum["LOW","MEDIUM","HIGH"]), dueDate, assignToUserId, version(for optimistic lock concurrency control), createdAt, updatedAt.
+5. TaskComment: comments belong to task, link to task and author user.
+6. TaskAttachment (stretch goal): file metadata for uploaded attachments, link to task.
+
+Database constraints:
+1. Add indexes for high‑frequency query columns: projectId, assignToUserId, task status.
+2. Enforce enum constraints at database level.
+3. Optimistic locking: Task table version field. When two users edit same task concurrently, version mismatch returns conflict error.
+
+## Functional Requirements
+### 1. Authentication
+- User sign‑in / sign‑up powered by Clerk.
+- Block unauthenticated users for all protected pages and all REST API endpoints.
+
+### 2. Project / Workspace Module
+- Logged‑in user can create new project, creator automatically becomes OWNER role.
+- Project OWNER: invite users to join project, remove existing members, delete whole project.
+- Normal MEMBER: cannot delete project, cannot manage member list.
+- Every Server Action AND every REST API endpoint must validate user role from ProjectMember table. Prevent privilege bypass: user cannot access project resources they do not belong to.
+
+### 3. Task Core Module
+Inside project workspace:
+- Create task: title is required field, support description, priority, dueDate, assign task to project member.
+- Edit task, update status, adjust priority, re‑assign task owner.
+- Optimistic lock logic: version mismatch returns conflict error, notify end‑user other user modified this resource, suggest page refresh.
+- Delete task.
+- Members can add comments under task.
+- Task file attachment is stretch‑goal feature.
+
+### 4. List, Filter & Pagination
+- Task list supports multi‑filter: filter by task status, priority, assigned user.
+- Support sort by dueDate / createdAt.
+- Implement offset skip‑limit pagination combined with filters.
+- In‑code comment and README document trade‑offs: offset pagination simple for demo, performance degrades on large offset; cursor pagination is production alternative.
+
+### 5. Project Dashboard
+Render statistics cards for current project: total task count, count of todo / in‑progress / done tasks.
+
+### Mandatory REST API Endpoints (Route Handlers)
+All endpoints enforce permission check, standardized JSON error body, proper status codes: 401,403,400,409(conflict for optimistic lock).
+1. `GET /api/projects` — list projects accessible to current user
+2. `POST /api/projects` — create new project
+3. `GET /api/projects/[id]/tasks` — paginated & filtered task list of target project
+4. `POST /api/projects/[id]/tasks` — create new task
+5. `PATCH /api/tasks/[id]` — update task with optimistic lock version check
+6. `POST /api/tasks/[id]/comments` — create comment for task
+
+List all API endpoints inside project README.
+
+### Frontend UI Requirement
+- Sidebar navigation: Dashboard, Project List, Project Detail page.
+- Display backend validation / permission error via toast UI, no silent failure.
+- Global error handling: never expose raw database stack trace to end‑user.
+- Basic responsive layout.
+
+## Strict Layered Code Architecture (Avoid toy demo)
+1. **UI Layer**: React page / client components, only UI rendering logic.
+2. **Server Action Layer**: thin adapter, receive form input parameters, invoke shared service functions. No business logic here.
+3. **Route Handler (REST API Layer)**: thin HTTP adapter, parse request payload, invoke shared service layer, format HTTP response. No business logic here.
+4. **Service / Business Logic Layer**: ALL core business logic, permission check, database operations. Reused by Server Actions and REST API.
+5. **Prisma Schema**: database model definition.
+
+- Strict TypeScript, minimize usage of `any`. Define proper types / interfaces for function parameters and return values.
+- Input validation: Use Zod for all user input inside service layer. Frontend validation is only auxiliary.
+- Custom business error classes: permission error, validation error, conflict error, database error; map to safe end‑user messages.
+
+## Github & README Requirements
+README must contain these sections:
+1. Project overview and use‑case
+2. Complete tech stack introduction
+3. Brief database schema explanation
+4. Document all exposed REST API endpoints
+5. Local environment setup steps, list all required `.env` variables
+6. **Trade‑offs / Limitations section (very important for SWE interview)**
+    Document known weaknesses and production improvement ideas.
+    Example points: offset pagination drawback, simple optimistic lock implementation, missing rate‑limit, no email notification, attachment is stretch‑goal.
+
+Code should run locally, add placeholder comment for environment variables.
+
+## Forbidden Items
+1. Do NOT add any AI / LLM feature.
+2. Do NOT add over‑complicated infrastructure: no microservice, no message queue, keep intern‑reasonable scope.
+3. Do NOT skip backend authorization check, never only hide buttons on frontend.
+4. Do NOT duplicate business logic between Server Actions and Route Handlers. Reuse shared service layer.
+
+## Agent Additional Instructions
+1. Keep code clean & interview‑friendly. Add short comments for security and core business logic.
+2. Fully generate complete prisma schema file.
+3. After finishing code generation, output summary: list completed core features, list stretch / optional features.
+4. Add short inline code comment explaining why dual entry‑points (Server Actions + REST Route Handlers) exist.
