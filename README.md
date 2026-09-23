@@ -2,14 +2,34 @@
 
 A production-oriented team-collaboration SaaS web application for US SWE/SDE internship portfolio. Lightweight Trello / GitHub Issues style task management.
 
-## Table of Contents
+## 🚀 Quick Highlights
 
-1. [Project Overview](#project-overview)
-2. [Tech Stack](#tech-stack)
-3. [Database Schema](#database-schema)
-4. [REST API Endpoints](#rest-api-endpoints)
-5. [Local Setup](#local-setup)
-6. [Trade-offs & Limitations](#trade-offs--limitations)
+-   **Modern Full-Stack Architecture**: Built with **Next.js 15 (App Router)** and **TypeScript**, featuring a strict layered architecture (UI → Server Actions/REST → Service → Prisma).
+-   **Dual Entry-Point Design**: Supports both **Web UI (Server Actions)** and a **RESTful API**, with business logic uniformly reused in the Service Layer.
+-   **Robust Authorization & Concurrency Control**: Implements **Role-Based Access Control (RBAC)** and **Optimistic Locking** mechanisms for data security and consistency.
+-   **Type Safety & Data Validation**: Utilizes **PostgreSQL + Prisma** (with enums, foreign keys, indexes) at the database level, and **Zod** for strict backend input validation.
+-   **Developer-Friendly**: Provides detailed local setup instructions and thoughtful considerations for production trade-offs and future improvements.
+
+## 🛠️ Tech Stack
+
+-   **Framework**: Next.js 15 (App Router)
+-   **Language**: TypeScript
+-   **Styling**: Tailwind CSS
+-   **Database**: PostgreSQL 18
+-   **ORM**: Prisma 6
+-   **Authentication**: Clerk
+-   **Validation**: Zod
+
+---
+
+## 📖 Table of Contents
+
+1.  [Project Overview](#project-overview)
+2.  [Tech Stack](#tech-stack)
+3.  [Database Schema](#database-schema)
+4.  [REST API Endpoints](#rest-api-endpoints)
+5.  [Local Setup](#local-setup)
+6.  [Trade-offs & Limitations](#trade-offs--limitations)
 
 ---
 
@@ -17,37 +37,37 @@ A production-oriented team-collaboration SaaS web application for US SWE/SDE int
 
 Collaborative Task Hub is a team workspace where multiple users can:
 
-- **Create workspaces (Projects)** — each project has an owner and multiple members
-- **Invite members** — project owners can manage the member list
-- **Create and assign tasks** — with status (To Do / In Progress / Done), priority (Low / Medium / High), due dates, and assignees
-- **Track progress** — dashboard statistics and filtering/sorting
-- **Leave comments** — thread communication under each task
-- **Concurrent editing safety** — optimistic locking prevents data loss
+-   **Create workspaces (Projects)** — each project has an owner and multiple members
+-   **Invite members** — project owners can manage the member list
+-   **Create and assign tasks** — with status (To Do / In Progress / Done), priority (Low / Medium / High), due dates, and assignees
+-   **Track progress** — dashboard statistics and filtering/sorting
+-   **Leave comments** — thread communication under each task
+-   **Concurrent editing safety** — optimistic locking prevents data loss
 
 ### Key Features for Resume
 
-- **Strict layered architecture**: UI → Server Actions / REST Handlers → Shared Service Layer → Prisma
-- **Dual entry-points**: Server Actions for Web UI (Progressive Enhancement) + REST API for programmatic access — both re-use the same Service Layer
-- **RBAC**: Role-based access control enforced server-side (not just UI)
-- **Optimistic Locking**: Concurrent edit conflicts detected and reported
-- **Prisma + PostgreSQL**: Full ORM with enums, foreign keys, indexes, transactions
-- **zod validation**: All input validated on the backend
+-   **Strict layered architecture**: UI → Server Actions / REST Handlers → Shared Service Layer → Prisma
+-   **Dual entry-points**: Server Actions for Web UI (Progressive Enhancement) + REST API for programmatic access — both re-use the same Service Layer
+-   **RBAC**: Role-based access control enforced server-side (not just UI)
+-   **Optimistic Locking**: Concurrent edit conflicts detected and reported
+-   **Prisma + PostgreSQL**: Full ORM with enums, foreign keys, indexes, transactions
+-   **zod validation**: All input validated on the backend
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology | Purpose |
-|---|---|---|
+| Layer     | Technology            | Purpose                                                  |
+| :-------- | :-------------------- | :------------------------------------------------------- |
 | Framework | Next.js 15 App Router | React framework with Server Components, Server Actions, Route Handlers |
-| Language | TypeScript | Static typing throughout, minimal `any` |
-| Styling | Tailwind CSS 3.4 | Utility-first CSS |
-| Database | PostgreSQL 18 | Relational database, enum constraints, FKs, indexes |
-| ORM | Prisma 6 | Type-safe database access, migrations |
-| Auth | Clerk | User sign-in / sign-up, session management, middleware |
-| Validation | Zod | Runtime input validation in Service layer |
-| Notifications | Sonner | Toast UI for error/success feedback |
-| Icons | Lucide React | Consistent icon set |
+| Language  | TypeScript            | Static typing throughout, minimal `any`                  |
+| Styling   | Tailwind CSS 3.4      | Utility-first CSS                                        |
+| Database  | PostgreSQL 18         | Relational database, enum constraints, FKs, indexes      |
+| ORM       | Prisma 6              | Type-safe database access, migrations                    |
+| Auth      | Clerk                 | User sign-in / sign-up, session management, middleware   |
+| Validation| Zod                   | Runtime input validation in Service layer                |
+| Notifications| Sonner             | Toast UI for error/success feedback                      |
+| Icons     | Lucide React          | Consistent icon set                                      |
 
 ### Architecture Layers
 
@@ -80,9 +100,9 @@ Collaborative Task Hub is a team workspace where multiple users can:
 
 Why both Server Actions and REST Handlers?
 
-- **Server Actions** provide progressive enhancement for the Web UI — works without JavaScript, integrates with React's `useActionState` for form state management.
-- **REST Handlers** expose the same logic to third-party integrations and external clients (e.g., mobile apps, scripts).
-- **Both are thin adapters** — all business logic lives in the Service Layer, ensuring consistency and avoiding duplicated code.
+-   **Server Actions** provide progressive enhancement for the Web UI — works without JavaScript, integrates with React's `useActionState` for form state management.
+-   **REST Handlers** expose the same logic to third-party integrations and external clients (e.g., mobile apps, scripts).
+-   **Both are thin adapters** — all business logic lives in the Service Layer, ensuring consistency and avoiding duplicated code.
 
 ---
 
@@ -90,23 +110,23 @@ Why both Server Actions and REST Handlers?
 
 ### Models
 
-- **User**: Stores Clerk's `userId` as unique identifier. Contains email, name, avatar, and timestamps.
-- **Project**: Team workspace with owner reference. Contains name, description, timestamps.
-- **ProjectMember**: Many-to-many join table between User and Project. Stores role (OWNER/MEMBER). This is the source of truth for RBAC.
-- **Task**: Belongs to a Project. Contains title, description, status (TODO/IN_PROGRESS/DONE), priority (LOW/MEDIUM/HIGH), dueDate, assignee (nullable FK), `version` (for optimistic locking), timestamps.
-- **TaskComment**: Comments on a task. Links to task and author user.
-- **TaskAttachment**: Stretch-goal schema (defined but not fully implemented in this iteration).
+-   **User**: Stores Clerk's `userId` as unique identifier. Contains email, name, avatar, and timestamps.
+-   **Project**: Team workspace with owner reference. Contains name, description, timestamps.
+-   **ProjectMember**: Many-to-many join table between User and Project. Stores role (OWNER/MEMBER). This is the source of truth for RBAC.
+-   **Task**: Belongs to a Project. Contains title, description, status (TODO/IN_PROGRESS/DONE), priority (LOW/MEDIUM/HIGH), dueDate, assignee (nullable FK), `version` (for optimistic locking), timestamps.
+-   **TaskComment**: Comments on a task. Links to task and author user.
+-   **TaskAttachment**: Stretch-goal schema (defined but not fully implemented in this iteration).
 
 ### Key Design Decisions
 
-| Decision | Rationale |
-|---|---|
-| Database-level enums | Strict constraint enforcement — prevents invalid status/priority values at DB level |
-| `version` field on Task | Optimistic locking: concurrent edits detect conflicts |
-| `assignToUserId` as nullable FK | Task can be unassigned; `OnDelete: SetNull` for safe user removal |
-| Cascade delete on ProjectMember | When a user or project is deleted, membership rows are cleaned up |
-| Indexes on projectId, assignToUserId, status | High-frequency query columns for list/filter operations |
-| Clerk userId → local User sync | Foreign keys in our schema reference local User.id, not Clerk IDs |
+| Decision                    | Rationale                                                                        |
+| :-------------------------- | :------------------------------------------------------------------------------- |
+| Database-level enums        | Strict constraint enforcement — prevents invalid status/priority values at DB level |
+| `version` field on Task     | Optimistic locking: concurrent edits detect conflicts                            |
+| `assignToUserId` as nullable FK | Task can be unassigned; `OnDelete: SetNull` for safe user removal                |
+| Cascade delete on ProjectMember | When a user or project is deleted, membership rows are cleaned up                |
+| Indexes on projectId, assignToUserId, status | High-frequency query columns for list/filter operations                          |
+| Clerk userId → local User sync | Foreign keys in our schema reference local User.id, not Clerk IDs                 |
 
 ---
 
@@ -132,6 +152,7 @@ All endpoints require authentication (Clerk session). All responses use standard
 Returns all projects the current user has membership access to.
 
 **Response (200):**
+
 ```json
 {
   "data": [
@@ -151,6 +172,7 @@ Returns all projects the current user has membership access to.
 `POST /api/projects`
 
 **Body:**
+
 ```json
 {
   "name": "New Project",
@@ -170,17 +192,18 @@ Creates project and automatically adds current user as OWNER member.
 
 **Query Parameters:**
 
-| Param | Type | Required | Description |
-|---|---|---|---|
-| status | enum | No | Filter by TODO / IN_PROGRESS / DONE |
-| priority | enum | No | Filter by LOW / MEDIUM / HIGH |
-| assignToUserId | string | No | Filter by assignee |
-| sortBy | string | No | `createdAt` (default) or `dueDate` |
-| sortOrder | string | No | `desc` (default) or `asc` |
-| page | int | No | Page number, default 1 |
-| pageSize | int | No | Items per page, default 10, max 50 |
+| Param          | Type   | Required | Description                       |
+| :------------- | :----- | :------- | :-------------------------------- |
+| status         | enum   | No       | Filter by TODO / IN_PROGRESS / DONE |
+| priority       | enum   | No       | Filter by LOW / MEDIUM / HIGH     |
+| assignToUserId | string | No       | Filter by assignee                |
+| sortBy         | string | No       | `createdAt` (default) or `dueDate` |
+| sortOrder      | string | No       | `desc` (default) or `asc`         |
+| page           | int    | No       | Page number, default 1            |
+| pageSize       | int    | No       | Items per page, default 10, max 50 |
 
 **Response (200):**
+
 ```json
 {
   "data": {
@@ -198,6 +221,7 @@ Creates project and automatically adds current user as OWNER member.
 `POST /api/projects/{id}/tasks`
 
 **Body:**
+
 ```json
 {
   "title": "Fix login bug",
@@ -218,6 +242,7 @@ Creates project and automatically adds current user as OWNER member.
 `PATCH /api/tasks/{id}`
 
 **Body — must include `version`:**
+
 ```json
 {
   "title": "Updated title",
@@ -231,16 +256,18 @@ The `version` field is required. The server atomically updates the row only if t
 **Response (200):** Updated task with new version.
 
 **Errors:**
-- `400`: Missing or invalid fields
-- `403`: Not a project member
-- `404`: Task not found
-- **`409`**: Optimistic lock conflict — another user modified this resource. Refresh and retry.
+
+-   `400`: Missing or invalid fields
+-   `403`: Not a project member
+-   `404`: Task not found
+-   **`409`**: Optimistic lock conflict — another user modified this resource. Refresh and retry.
 
 ### 6. Create Comment
 
 `POST /api/tasks/{id}/comments`
 
 **Body:**
+
 ```json
 {
   "content": "Fixed the issue — deploying now"
@@ -257,9 +284,9 @@ The `version` field is required. The server atomically updates the row only if t
 
 ### Prerequisites
 
-- Node.js 20+
-- npm 9+
-- PostgreSQL (locally installed)
+-   Node.js 20+
+-   npm 9+
+-   PostgreSQL (locally installed)
 
 ### Step 1: Database Setup
 
@@ -300,16 +327,16 @@ Visit `http://localhost:3000` in your browser.
 
 ### Environment Variables Reference
 
-| Variable | Description |
-|---|---|
-| `DATABASE_URL` | PostgreSQL connection string for Prisma Client |
-| `DIRECT_URL` | Direct PostgreSQL connection (for Prisma Migrate) |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk publishable key (client-safe) |
-| `CLERK_SECRET_KEY` | Clerk secret key (server-only, never expose) |
-| `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | Sign-in redirect path |
-| `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | Sign-up redirect path |
-| `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL` | Post sign-in redirect |
-| `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL` | Post sign-up redirect |
+| Variable                           | Description                                     |
+| :--------------------------------- | :---------------------------------------------- |
+| `DATABASE_URL`                     | PostgreSQL connection string for Prisma Client  |
+| `DIRECT_URL`                       | Direct PostgreSQL connection (for Prisma Migrate) |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`| Clerk publishable key (client-safe)             |
+| `CLERK_SECRET_KEY`                 | Clerk secret key (server-only, never expose)    |
+| `NEXT_PUBLIC_CLERK_SIGN_IN_URL`    | Sign-in redirect path                           |
+| `NEXT_PUBLIC_CLERK_SIGN_UP_URL`    | Sign-up redirect path                           |
+| `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL`| Post sign-in redirect                         |
+| `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL`| Post sign-up redirect                         |
 
 ---
 
@@ -317,30 +344,30 @@ Visit `http://localhost:3000` in your browser.
 
 ### Known Weaknesses (for interview discussion)
 
-1. **Offset Pagination**: We use offset-based pagination (`skip` + `take`). This is simple and appropriate for a team workspace (thousands, not millions, of rows), but performance degrades on large offsets. **Production alternative**: cursor-based pagination (keyset pagination).
+1.  **Offset Pagination**: We use offset-based pagination (`skip` + `take`). This is simple and appropriate for a team workspace (thousands, not millions, of rows), but performance degrades on large offsets. **Production alternative**: cursor-based pagination (keyset pagination).
 
-2. **Simple Optimistic Locking**: Uses `version` column with `updateMany` + `count === 0` check. This is correct but not as sophisticated as event-sourcing or CRDTs. For a single-task-at-a-time edit pattern, this is sufficient.
+2.  **Simple Optimistic Locking**: Uses `version` column with `updateMany` + `count === 0` check. This is correct but not as sophisticated as event-sourcing or CRDTs. For a single-task-at-a-time edit pattern, this is sufficient.
 
-3. **No Rate Limiting**: The API has no rate limiting. In production, you'd add something like Upstash/Rate Limit Redis or a middleware-based solution.
+3.  **No Rate Limiting**: The API has no rate limiting. In production, you'd add something like Upstash/Rate Limit Redis or a middleware-based solution.
 
-4. **No Email Notifications**: When a user is invited to a project, no email is sent. The system relies on the user knowing to log in and check. **Production alternative**: integrate Clerk's email notification or a service like Resend.
+4.  **No Email Notifications**: When a user is invited to a project, no email is sent. The system relies on the user knowing to log in and check. **Production alternative**: integrate Clerk's email notification or a service like Resend.
 
-5. **Attachment is Stretch Goal**: Task attachments (file uploads) are defined in the Prisma schema but not fully implemented in this iteration. This was a deliberate scope decision for an intern-level project.
+5.  **Attachment is Stretch Goal**: Task attachments (file uploads) are defined in the Prisma schema but not fully implemented in this iteration. This was a deliberate scope decision for an intern-level project.
 
-6. **Clerk Dependency**: Authentication is tightly coupled to Clerk. While Clerk is excellent, it means a third-party service outage affects your app. **Production alternative**: support multiple auth providers or have a fallback mechanism.
+6.  **Clerk Dependency**: Authentication is tightly coupled to Clerk. While Clerk is excellent, it means a third-party service outage affects your app. **Production alternative**: support multiple auth providers or have a fallback mechanism.
 
-7. **No Test Suite**: Automated tests (unit/integration) are not included. For production, you'd add Vitest/Jest for service-layer unit tests and Playwright for E2E tests.
+7.  **No Test Suite**: Automated tests (unit/integration) are not included. For production, you'd add Vitest/Jest for service-layer unit tests and Playwright for E2E tests.
 
-8. **No Multi-tenant Data Isolation**: The system relies on application-level RBAC (ProjectMember table). For strict multi-tenant isolation, you might consider row-level security (RLS) policies in PostgreSQL.
+8.  **No Multi-tenant Data Isolation**: The system relies on application-level RBAC (ProjectMember table). For strict multi-tenant isolation, you might consider row-level security (RLS) policies in PostgreSQL.
 
 ### Production Improvement Ideas
 
-- Add Redis caching for frequent queries (project stats, member lists)
-- Implement WebSocket/SSE for real-time task updates
-- Add audit logging for critical operations (create/delete project, invite/remove member)
-- Add API versioning for future backwards-compatible changes
-- Add request tracing (correlation IDs) for debugging in distributed systems
-- Add Prometheus/Grafana metrics for monitoring
+-   Add Redis caching for frequent queries (project stats, member lists)
+-   Implement WebSocket/SSE for real-time task updates
+-   Add audit logging for critical operations (create/delete project, invite/remove member)
+-   Add API versioning for future backwards-compatible changes
+-   Add request tracing (correlation IDs) for debugging in distributed systems
+-   Add Prometheus/Grafana metrics for monitoring
 
 ---
 
