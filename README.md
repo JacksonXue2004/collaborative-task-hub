@@ -1,6 +1,6 @@
 # Collaborative Task Hub
 
-A production-oriented team-collaboration SaaS web application for US SWE/SDE internship portfolio. Lightweight Trello / GitHub Issues style task management.
+A production-oriented team collaboration application inspired by lightweight task boards and issue trackers.
 
 ## 🚀 Quick Highlights
 
@@ -44,7 +44,7 @@ Collaborative Task Hub is a team workspace where multiple users can:
 -   **Leave comments** — thread communication under each task
 -   **Concurrent editing safety** — optimistic locking prevents data loss
 
-### Key Features for Resume
+### Key Engineering Features
 
 -   **Strict layered architecture**: UI → Server Actions / REST Handlers → Shared Service Layer → Prisma
 -   **Dual entry-points**: Server Actions for Web UI (Progressive Enhancement) + REST API for programmatic access — both re-use the same Service Layer

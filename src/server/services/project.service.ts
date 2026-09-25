@@ -37,7 +37,7 @@ export async function createProject(input: { name: string; description?: string 
 }
 
 // List projects the current user has membership in.
-//some = 只要有一条符合条件的关联记录就行（对应 SQL 的 EXISTS ）
+
 export async function listProjects() {
   const currentUser = await getCurrentUser();
   const projects = await prisma.project.findMany({
@@ -45,7 +45,7 @@ export async function listProjects() {
     include: { owner: { select: { id: true, name: true, email: true } } },
     orderBy: { createdAt: 'desc' },
   });
-  //map = 数组变换，把每个项目转换成我们需要的格式
+
   return projects.map((p) => ({
     id: p.id,
     name: p.name,

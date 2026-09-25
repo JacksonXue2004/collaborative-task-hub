@@ -2,11 +2,7 @@
 // and to map AppError into safe end-user JSON responses. Server Actions use a
 // different ActionState shape (see types.ts) because they must integrate with
 // useActionState on the client.
-/**
- * - 统一 API 响应助手
-- Route Handlers 用这些函数序列化结果、把 AppError 转成安全的 JSON 响应
-- Server Actions 用不同的 ActionState 格式（见 types.ts），因为要和客户端的 useActionState 集成
- */
+
 import { NextResponse } from 'next/server';
 import { AppError } from './errors';
 

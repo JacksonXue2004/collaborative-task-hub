@@ -3,7 +3,7 @@
 // handlers consistent — both entry points import these schemas.
 import { z } from 'zod';
 
-//.min(1, '错误消息') ：第二个参数是自定义错误消息。校验失败时返回这条消息给用户。
+
 export const createProjectSchema = z.object({
   name: z.string().min(1, 'Project name is required').max(100),
   description: z.string().max(500).optional(),
@@ -26,11 +26,11 @@ export const createTaskSchema = z.object({
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH']).optional(),
   assignToUserId: z.string().optional(),
   dueDate: z
-    .string()   // 1. 是字符串
-    .datetime() // 2. 符合 ISO 日期格式（如 "2026-08-10T00:00:00Z"）
+    .string()
+    .datetime()
     .optional()
-    .or(z.string().nullable())   // 4. 或者也可以是 null
-    .transform((v) => (v ? new Date(v) : null)), // 5. 转换成 Date 对象或 null
+    .or(z.string().nullable())
+    .transform((v) => (v ? new Date(v) : null)),
 });
 
 export const updateTaskSchema = z
