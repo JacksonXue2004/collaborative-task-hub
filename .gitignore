@@ -45,3 +45,4 @@ PROJECT_CODEBOOK.md
 /prisma/*.db-journal
 
 /src/generated/prisma
+skills-lock.json
