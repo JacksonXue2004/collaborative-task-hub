@@ -2,6 +2,20 @@
 // frontend) to prevent forged requests and to keep Server Actions and REST
 // handlers consistent — both entry points import these schemas.
 import { z } from 'zod';
+import { ValidationError } from './errors';
+
+// Runs a schema and turns a Zod failure into ValidationError (HTTP 400). Services call this
+// instead of schema.parse() so REST handlers and Server Actions both report bad input as a
+// validation error rather than an unexpected 500.
+export function parseInput<T>(schema: z.ZodType<T>, input: unknown): T {
+  const result = schema.safeParse(input);
+  if (!result.success) {
+    const issue = result.error.issues[0];
+    const field = issue?.path.map(String).join('.');
+    throw new ValidationError(field ? `${field}: ${issue.message}` : (issue?.message ?? 'Invalid input'));
+  }
+  return result.data;
+}
 
 
 export const createProjectSchema = z.object({

@@ -1,7 +1,7 @@
 // Service layer — Project membership (RBAC enforcement).
 import { prisma } from '../lib/prisma';
 import { getCurrentUser } from '../lib/auth';
-import { inviteMemberSchema } from '../lib/schemas';
+import { inviteMemberSchema, parseInput } from '../lib/schemas';
 import { NotFoundError, ForbiddenError, ValidationError, ConflictError } from '../lib/errors';
 import { requireProjectOwner } from './project.service';
 
@@ -32,7 +32,7 @@ export async function inviteMember(projectId: string, input: { email: string; ro
   const currentUser = await getCurrentUser();
   await requireProjectOwner(projectId, currentUser.id);
 
-  const parsed = inviteMemberSchema.parse(input);
+  const parsed = parseInput(inviteMemberSchema, input);
 
   const targetUser = await prisma.user.findUnique({ where: { email: parsed.email } });
   if (!targetUser) {

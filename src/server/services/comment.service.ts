@@ -1,7 +1,7 @@
 // Service layer — TaskComment management.
 import { prisma } from '../lib/prisma';
 import { getCurrentUser } from '../lib/auth';
-import { createCommentSchema } from '../lib/schemas';
+import { createCommentSchema, parseInput } from '../lib/schemas';
 import { NotFoundError } from '../lib/errors';
 import { requireProjectMember } from './project.service';
 
@@ -12,7 +12,7 @@ export async function createComment(taskId: string, input: { content: string }) 
   if (!task) throw new NotFoundError('Task not found');
   await requireProjectMember(task.projectId, currentUser.id);
 
-  const parsed = createCommentSchema.parse(input);
+  const parsed = parseInput(createCommentSchema, input);
 
   const comment = await prisma.taskComment.create({
     data: {

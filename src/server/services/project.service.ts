@@ -4,13 +4,13 @@
 import { prisma } from '../lib/prisma';
 import { getCurrentUser } from '../lib/auth';
 import { NotFoundError, ForbiddenError, ValidationError } from '../lib/errors';
-import { createProjectSchema } from '../lib/schemas';
+import { createProjectSchema, parseInput } from '../lib/schemas';
 
 // Create a new project. The current user automatically becomes the OWNER via
 // a ProjectMember row created in the same transaction — guarantees consistency.
 export async function createProject(input: { name: string; description?: string }) {
   const currentUser = await getCurrentUser();
-  const parsed = createProjectSchema.parse(input);
+  const parsed = parseInput(createProjectSchema, input);
 
   // Create project in a transaction to ensure consistency.
   const project = await prisma.$transaction(async (tx) => {

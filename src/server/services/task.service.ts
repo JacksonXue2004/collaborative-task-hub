@@ -3,7 +3,7 @@
 // the count of matching rows — if 0, someone else modified the row in between.
 import { prisma } from '../lib/prisma';
 import { getCurrentUser } from '../lib/auth';
-import { createTaskSchema, updateTaskSchema, listTasksQuerySchema } from '../lib/schemas';
+import { createTaskSchema, updateTaskSchema, listTasksQuerySchema, parseInput } from '../lib/schemas';
 import {
   NotFoundError,
   ForbiddenError,
@@ -18,7 +18,7 @@ export async function createTask(projectId: string, input: Record<string, unknow
   const currentUser = await getCurrentUser();
   await requireProjectMember(projectId, currentUser.id);
 
-  const parsed = createTaskSchema.parse(input);
+  const parsed = parseInput(createTaskSchema, input);
 
   // Verify assignee (if provided) is a project member
   if (parsed.assignToUserId) {
@@ -60,7 +60,7 @@ export async function updateTask(taskId: string, input: Record<string, unknown>)
   if (!existing) throw new NotFoundError('Task not found');
   await requireProjectMember(existing.projectId, currentUser.id);
 
-  const parsed = updateTaskSchema.parse(input);
+  const parsed = parseInput(updateTaskSchema, input);
   const { version: expectedVersion, ...updates } = parsed;
 
   // Verify assignee is a member if being changed
@@ -141,7 +141,7 @@ export async function listTasks(
   const currentUser = await getCurrentUser();
   await requireProjectMember(projectId, currentUser.id);
 
-  const parsed = listTasksQuerySchema.parse(query);
+  const parsed = parseInput(listTasksQuerySchema, query);
 
   const where = {
     projectId,
