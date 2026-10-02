@@ -8,6 +8,7 @@ A production-oriented team collaboration application inspired by lightweight tas
 -   **Dual Entry-Point Design**: Supports both **Web UI (Server Actions)** and a **RESTful API**, with business logic uniformly reused in the Service Layer.
 -   **Robust Authorization & Concurrency Control**: Implements **Role-Based Access Control (RBAC)** and **Optimistic Locking** mechanisms for data security and consistency.
 -   **Type Safety & Data Validation**: Utilizes **PostgreSQL + Prisma** (with enums, foreign keys, indexes) at the database level, and **Zod** for strict backend input validation.
+-   **Tested Against Real PostgreSQL**: Vitest service-layer tests run in CI on every push, including a concurrency test where **50 simultaneous updates with the same version produce exactly 1 success and 49 conflicts (HTTP 409)**.
 -   **Developer-Friendly**: Provides detailed local setup instructions and thoughtful considerations for production trade-offs and future improvements.
 
 ## 🛠️ Tech Stack
@@ -19,6 +20,7 @@ A production-oriented team collaboration application inspired by lightweight tas
 -   **ORM**: Prisma 6
 -   **Authentication**: Clerk
 -   **Validation**: Zod
+-   **Testing**: Vitest, PostgreSQL in Docker, GitHub Actions
 
 ---
 
@@ -29,7 +31,8 @@ A production-oriented team collaboration application inspired by lightweight tas
 3.  [Database Schema](#database-schema)
 4.  [REST API Endpoints](#rest-api-endpoints)
 5.  [Local Setup](#local-setup)
-6.  [Trade-offs & Limitations](#trade-offs--limitations)
+6.  [Testing](#testing)
+7.  [Trade-offs & Limitations](#trade-offs--limitations)
 
 ---
 
@@ -286,13 +289,13 @@ The `version` field is required. The server atomically updates the row only if t
 
 -   Node.js 20+
 -   npm 9+
--   PostgreSQL (locally installed)
+-   PostgreSQL 16+ (installed locally or run with Docker)
 
 ### Step 1: Database Setup
 
 ```bash
 # Connect to PostgreSQL
-D:\pgsql\bin\psql.exe -U postgres
+psql -U postgres
 
 # Create the database
 CREATE DATABASE collaborative_task_hub;
@@ -303,9 +306,9 @@ CREATE DATABASE collaborative_task_hub;
 
 ```bash
 # Copy the example
-cp .env.example .env.local
+cp .env.example .env
 
-# Edit .env.local and fill in:
+# Edit .env (read by both Prisma and Next.js) and fill in:
 # - DATABASE_URL (with your postgres password)
 # - Clerk API keys (from https://dashboard.clerk.com)
 ```
@@ -338,11 +341,25 @@ Visit `http://localhost:3000` in your browser.
 | `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL`| Post sign-in redirect                         |
 | `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL`| Post sign-up redirect                         |
 
+## Testing
+
+The service layer is tested against a real PostgreSQL database, never the one in `.env`.
+
+```bash
+# Start a throwaway test database (port 5433, data kept in memory)
+docker compose -f docker-compose.test.yml up -d
+
+npm test           # Vitest
+npm run typecheck  # tsc --noEmit
+```
+
+The suite covers project ownership, membership checks (403), owner-only actions, input validation (400) and optimistic-lock conflicts (409). A concurrency test sends 50 simultaneous updates with the same version and checks that exactly one succeeds and the version increases by one. GitHub Actions runs type checking and the tests on every push.
+
 ---
 
 ## Trade-offs & Limitations
 
-### Known Weaknesses (for interview discussion)
+### Known Limitations
 
 1.  **Offset Pagination**: We use offset-based pagination (`skip` + `take`). This is simple and appropriate for a team workspace (thousands, not millions, of rows), but performance degrades on large offsets. **Production alternative**: cursor-based pagination (keyset pagination).
 
@@ -352,13 +369,11 @@ Visit `http://localhost:3000` in your browser.
 
 4.  **No Email Notifications**: When a user is invited to a project, no email is sent. The system relies on the user knowing to log in and check. **Production alternative**: integrate Clerk's email notification or a service like Resend.
 
-5.  **Attachment is Stretch Goal**: Task attachments (file uploads) are defined in the Prisma schema but not fully implemented in this iteration. This was a deliberate scope decision for an intern-level project.
+5.  **Attachment is Stretch Goal**: Task attachments (file uploads) are defined in the Prisma schema but not fully implemented in this iteration. This was a deliberate scope decision.
 
 6.  **Clerk Dependency**: Authentication is tightly coupled to Clerk. While Clerk is excellent, it means a third-party service outage affects your app. **Production alternative**: support multiple auth providers or have a fallback mechanism.
 
-7.  **No Test Suite**: Automated tests (unit/integration) are not included. For production, you'd add Vitest/Jest for service-layer unit tests and Playwright for E2E tests.
-
-8.  **No Multi-tenant Data Isolation**: The system relies on application-level RBAC (ProjectMember table). For strict multi-tenant isolation, you might consider row-level security (RLS) policies in PostgreSQL.
+7.  **No Multi-tenant Data Isolation**: The system relies on application-level RBAC (ProjectMember table). For strict multi-tenant isolation, you might consider row-level security (RLS) policies in PostgreSQL.
 
 ### Production Improvement Ideas
 
