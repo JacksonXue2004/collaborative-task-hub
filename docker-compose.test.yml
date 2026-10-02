@@ -1,0 +1,13 @@
+# Throwaway PostgreSQL for the test suite: `docker compose -f docker-compose.test.yml up -d`.
+# Data lives in memory (tmpfs) and the credentials are test-only placeholders.
+services:
+  postgres-test:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: task_hub_test
+    ports:
+      - "5433:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
